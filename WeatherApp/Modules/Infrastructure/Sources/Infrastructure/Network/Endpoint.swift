@@ -17,6 +17,15 @@ public enum RequestMethod: String {
 }
 
 public protocol Endpoint {
+    var baseUrl: String { get }
+    var path: String { get }
     var queries: [String:String] { get }
     var method: RequestMethod { get }
+    var apiKey: String { get }
+}
+
+public extension Endpoint {
+    var apiKey: String {
+        return "7946421d36806460abbcbd28837c68d6"
+    }
 }

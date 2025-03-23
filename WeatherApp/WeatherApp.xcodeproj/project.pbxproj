@@ -7,9 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		07CDE8022D8C6B3E00010484 /* Data in Frameworks */ = {isa = PBXBuildFile; productRef = 07CDE8012D8C6B3E00010484 /* Data */; };
 		07CDE8042D8C6B4100010484 /* Domain in Frameworks */ = {isa = PBXBuildFile; productRef = 07CDE8032D8C6B4100010484 /* Domain */; };
-		07CDE8062D8C6B4300010484 /* Infrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 07CDE8052D8C6B4300010484 /* Infrastructure */; };
+		0AAB08A42D8EB67900C3D66D /* Data in Frameworks */ = {isa = PBXBuildFile; productRef = 0AAB08A32D8EB67900C3D66D /* Data */; };
+		0AAB08A62D8EB67D00C3D66D /* Infrastructure in Frameworks */ = {isa = PBXBuildFile; productRef = 0AAB08A52D8EB67D00C3D66D /* Infrastructure */; };
+		0AAB08B92D9083A700C3D66D /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 0AAB08B82D9083A700C3D66D /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,9 +65,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0AAB08A42D8EB67900C3D66D /* Data in Frameworks */,
+				0AAB08A62D8EB67D00C3D66D /* Infrastructure in Frameworks */,
 				07CDE8042D8C6B4100010484 /* Domain in Frameworks */,
-				07CDE8062D8C6B4300010484 /* Infrastructure in Frameworks */,
-				07CDE8022D8C6B3E00010484 /* Data in Frameworks */,
+				0AAB08B92D9083A700C3D66D /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,9 +140,10 @@
 			);
 			name = WeatherApp;
 			packageProductDependencies = (
-				07CDE8012D8C6B3E00010484 /* Data */,
 				07CDE8032D8C6B4100010484 /* Domain */,
-				07CDE8052D8C6B4300010484 /* Infrastructure */,
+				0AAB08A32D8EB67900C3D66D /* Data */,
+				0AAB08A52D8EB67D00C3D66D /* Infrastructure */,
+				0AAB08B82D9083A700C3D66D /* Lottie */,
 			);
 			productName = WeatherApp;
 			productReference = 07CDE78F2D8C433F00010484 /* WeatherApp.app */;
@@ -224,6 +227,9 @@
 			);
 			mainGroup = 07CDE7862D8C433F00010484;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0AAB08B72D9083A700C3D66D /* XCRemoteSwiftPackageReference "lottie-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 07CDE7902D8C433F00010484 /* Products */;
 			projectDirPath = "";
@@ -598,18 +604,34 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCSwiftPackageProductDependency section */
-		07CDE8012D8C6B3E00010484 /* Data */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Data;
+/* Begin XCRemoteSwiftPackageReference section */
+		0AAB08B72D9083A700C3D66D /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.0;
+			};
 		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
 		07CDE8032D8C6B4100010484 /* Domain */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Domain;
 		};
-		07CDE8052D8C6B4300010484 /* Infrastructure */ = {
+		0AAB08A32D8EB67900C3D66D /* Data */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Data;
+		};
+		0AAB08A52D8EB67D00C3D66D /* Infrastructure */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Infrastructure;
+		};
+		0AAB08B82D9083A700C3D66D /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0AAB08B72D9083A700C3D66D /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

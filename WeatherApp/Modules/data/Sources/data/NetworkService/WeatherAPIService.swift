@@ -8,6 +8,14 @@
 import Foundation
 import Infrastructure
 
-class WeatherAPIService: NetworkRequest {
+protocol WeatherAPIService {
+    func fetchWeather(city: String, units: String) async throws -> WeatherDTO
+}
+
+class WeatherAPIServiceImpl: NetworkRequest, WeatherAPIService {
+    
+    func fetchWeather(city: String, units: String) async throws -> WeatherDTO {
+        return try await request(endpoint: WeatherEndpoints.getWeather(city: city, units: units), responseModel: WeatherDTO.self)
+    }
     
 }

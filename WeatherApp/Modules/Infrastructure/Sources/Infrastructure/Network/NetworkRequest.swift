@@ -15,11 +15,10 @@ public protocol NetworkRequest {
 public extension NetworkRequest {
     func request<T: Decodable>(endpoint: Endpoint, responseModel: T.Type) async throws -> T {
         
-        let queryString = endpoint.queries.map { $0.0 + "=" + $0.1 }.joined(separator: "&")
+        var components = URLComponents(string: endpoint.baseUrl + endpoint.path)
+        components?.queryItems = endpoint.queries.map { URLQueryItem(name: $0.key, value: $0.value) }
         
-        let composeUrl = "http://api.weatherstack.com/current?access_key=b36710a0f8319d07a182d3e8bf8b1d13\(queryString)"
-        
-        guard let composeUrl = URL(string: composeUrl) else  {
+        guard let composeUrl = components?.url else  {
             throw NetworkError.invalidUrl
         }
         
@@ -79,14 +78,14 @@ public extension NetworkRequest {
     private func logSuccess(endpoint: Endpoint, statusCode: Int, data: Foundation.Data) {
         let httpMethod = endpoint.method.rawValue
         let statusCode = statusCode
-        var message = "Successfully made | \(httpMethod) | \(statusCode) | request"
+        var message = "Successfully made | \(httpMethod) | \(statusCode) | request | queries: \(endpoint.queries)"
         
  
         if let parsedData = parseData(data: data) {
             message += parsedData
         }
 
-//        Logger.debug(message)
+        Logger.debug(message)
         
     }
     
@@ -101,7 +100,7 @@ public extension NetworkRequest {
             message += parsedData
         }
 
-//        Logger.error(message)
+        Logger.error(message)
         
     }
     
