@@ -1,6 +1,6 @@
 # Weather Demo App  
 
-![Weather App Demo](Assets/readme/app_overview.gif)
+![Weather App Demo](WeatherApp/WeatherApp/Assets.xcassets/readme/app_overview.dataset/app_overview.gif)
 
 ## Overview
 
@@ -30,7 +30,7 @@ This project structured into four layers, packing it seperately using **Swift Pa
 #### ❶ Domain Layer
 Responsible for Business rules. It is considered independent of frameworks.
 
-+ **![Domain Layer](Assets/readme/domain_layer.png)**
++ **![Domain Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/domain_layer.imageset/domain_layer.png)**
 
 + **SOLID principles**
 
@@ -40,7 +40,7 @@ Responsible for Business rules. It is considered independent of frameworks.
 
 #### ❷Data Layer
 Handles Data retrieval (API, local storing, conversion)
-+ **![Data Layer](Assets/readme/data_layer.png)**
++ **![Data Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/data_layer.imageset/data_layer.png)**
 
 + **SOLID principles**
 
@@ -50,7 +50,7 @@ Handles Data retrieval (API, local storing, conversion)
 
 #### ❸Infrastructure Layer
 It holds external dependencies such as, Network, Monitoring, Logger, Utilities.
-+ **![Infrastructure Layer](Assets/readme/infrastructure_layer.png)**
++ **![Infrastructure Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/infrastructure_layer.imageset/infrastructure_layer.png)**
 
 + **SOLID principles**
 
@@ -60,7 +60,7 @@ It holds external dependencies such as, Network, Monitoring, Logger, Utilities.
 
 #### ❹Presentation Layer
 Basically handles UI, state management. Holds SwiftUI Views and View Models.
-+ **![Presentation Layer](Assets/readme/presentation_layer.png)**
++ **![Presentation Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/presentation_layer.imageset/presentation_layer.png)**
 
 + **SOLID principles**
 
