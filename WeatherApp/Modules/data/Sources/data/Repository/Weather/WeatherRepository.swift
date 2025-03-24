@@ -12,10 +12,10 @@ import Infrastructure
 public class WeatherRepositoryImpl: WeatherRepository {
     
     private let weatherApiService: WeatherAPIService
-    private let localDb: SQLiteHelper
+    private let localDb: SQLiteHelperProtocol
     private let networkChecker: NetworkConnectionMonitor
     
-    init(weatherApiService: WeatherAPIService, localDb: SQLiteHelper, networkChecker: NetworkConnectionMonitor) {
+    init(weatherApiService: WeatherAPIService, localDb: SQLiteHelperProtocol, networkChecker: NetworkConnectionMonitor) {
         self.weatherApiService = weatherApiService
         self.localDb = localDb
         self.networkChecker = networkChecker

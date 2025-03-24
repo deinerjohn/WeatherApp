@@ -32,7 +32,11 @@ let package = Package(
         ),
         .testTarget(
             name: "DataTests",
-            dependencies: ["Data"]
+            dependencies: [
+                "Data",
+                "Infrastructure",
+                "Domain"
+            ]
         ),
     ]
 )
