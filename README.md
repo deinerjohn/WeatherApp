@@ -80,6 +80,71 @@ Basically handles UI, state management. Holds SwiftUI Views and View Models.
 >    swift package resolve  // Resolves SPM dependencies
 >    ```
 > 3. **Run the App in Xcode**
+
+## 🧪 Unit Testing the Data Layer  
+
+This project includes unit tests to ensure the reliability of the **`WeatherRepository`** and its interactions with the **API service** and **local database**.  
+
++ **![Unit test folder](WeatherApp/WeatherApp/Assets.xcassets/readme/datatest_layer.imageset/datatest_layer.png)**
+
+### 🏗 Test Setup  
+The unit tests are implemented using **XCTest**, mocking the dependencies to simulate scenarios
+
+### 🛠 Mock Components  
+To isolate the **`WeatherRepository`** from actual API calls and database interactions, we use **mock classes**:  
+- **`MockWeatherAPIService`** simulates network responses (success & failure)  
+- **`MockSQLiteHelper`** mimics local database operations
+
+#### **1️⃣ Fetch Weather Successfully**  
+```swift
+func testFetchWeather_Success() async throws {
+    // Given - Prepare mock API response
+    let mockWeather = WeatherDTO(
+        weather: [WeatherConditionDTO(main: "Clear", description: "Clear sky", icon: "01d")],
+        main: MainWeatherDTO(temp: 20.5, pressure: 1012, humidity: 60, tempMin: 18.0, tempMax: 22.0),
+        wind: WindDTO(speed: 3.5, deg: 120),
+        clouds: CloudsDTO(all: 10),
+        id: 1,
+        cityName: "Tokyo",
+        countryName: "Japan"
+    )
+
+    mockAPIService.mockResponse = mockWeather
+    mockLocaldb.storedWeatherData = ["Tokyo": mockWeather]
+
+    // When - Fetch weather data
+    let result = try await repository.fetchWeather(country: "Japan", city: "Tokyo", units: "metric")
+
+    // Then - Validate response
+    XCTAssertEqual(result.cityName, "Tokyo")
+    XCTAssertEqual(result.countryName, "Japan")
+}
+```
+
+#### **2️⃣ Delete Weather Data**  
+```swift
+    func testDeleteWeatherData() async throws {
+        
+        let mockWeather = WeatherDTO(
+            weather: [WeatherConditionDTO(main: "Sunny", description: "Clear sky", icon: "01d")],
+            main: MainWeatherDTO(temp: 30.0, pressure: 1010, humidity: 40, tempMin: 28.0, tempMax: 32.0),
+            wind: WindDTO(speed: 2.5, deg: 90),
+            clouds: CloudsDTO(all: 5),
+            id: 2,
+            cityName: "Madrid",
+            countryName: "Spain"
+        )
+        
+        mockLocaldb.storedWeatherData = ["Madrid": mockWeather]
+        
+        do {
+            try await mockLocaldb.deleteWeatherData(for: "Madrid")
+            
+            XCTAssertNil(mockLocaldb.storedWeatherData["Madrid"], "Madrid should be removed from the mock database")
+        }
+        
+    }
+```  
   
 ## Technology Used
 
