@@ -16,7 +16,7 @@ This demo app is inspired by the Weather App on iOS, this project fetches data f
 
 ✔️ Implements **Lottie animations** for custom loading indicator
 
-✔️ Ability to change the temperature Units (Imperial/Celcius)
+✔️ Ability to change the temperature Units (Imperial/Metric)
 
 ✔️ Ability to delete cached weather data by sliding the list.
 
