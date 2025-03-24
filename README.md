@@ -176,6 +176,15 @@ func testFetchWeather_Success() async throws {
 
 + Toggle temperature units (Celcius/Fahrenheit)
 
+## Roadmap
++ 🔜 **Moving Backgrounds** - For dynamic weather-themed bg ex: (Snow, Rain)
+  
++ 🔜 **Integrate Map** - Locate selected country with longitude and langitude and show it on map.
+
++ 🔜 **Splash Screen** - Add animated splash screen
+
++ 🔜 **5 to 10 days forecast** - Implement or add details that will show 5 to 10 days possible weather forecast.
+
 ## License
 Feel free to use
 
