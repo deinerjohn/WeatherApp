@@ -1,5 +1,6 @@
 # Weather Demo App  
 
+![Weather App Demo](WeatherApp/WeatherApp/Assets.xcassets/readme/app_splash.dataset/app_splash.gif)
 ![Weather App Demo](WeatherApp/WeatherApp/Assets.xcassets/readme/app_overview.dataset/app_overview.gif)
 
 ## Overview
@@ -22,6 +23,48 @@ This demo app is inspired by the Weather App on iOS, this project fetches data f
 
 ✔️ Search ability for countries, data coming from countries.json stored in bundle project
 
+## User Interface & Animations
+
+### 📌 Drag-to-Dismiss Weather Details
+**drag-down** to dismiss the `WeatherDetailedView`
+
+### Demo
+![Weather App Demo](WeatherApp/WeatherApp/Assets.xcassets/readme/detail_drag.dataset/detail_drag.gif)
+
+### Code implementation
+
+The drag gesture is implemented using ``DragGesture()`` in SwiftUI:
+
+```swift
+        .gesture(
+            DragGesture()
+                .updating($dragTranslation) { value, state, _ in
+                    
+                    if value.translation.height > 0 {
+                        state = value.translation.height
+                    }
+                }
+                .onChanged { value in
+                    if value.translation.height > 0 {
+                        dragOffset = value.translation.height
+                    }
+                }
+                .onEnded { value in
+                    //The '200' value is the treshold
+                    if value.translation.height > 200 {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            isPresented = false
+                            dragOffset = 0
+                        }
+                    } else {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
+```
+
 
 ## 🏗️ Clean Architecture
 
@@ -30,7 +73,7 @@ This project structured into four layers, packing it seperately using **Swift Pa
 #### ❶ Domain Layer
 Responsible for Business rules. It is considered independent of frameworks.
 
-+ **![Domain Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/domain_layer.imageset/domain_layer.png)**
+**![Domain Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/domain_layer.imageset/domain_layer.png)**
 
 + **SOLID principles**
 
@@ -40,7 +83,7 @@ Responsible for Business rules. It is considered independent of frameworks.
 
 #### ❷Data Layer
 Handles Data retrieval (API, local storing, conversion)
-+ **![Data Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/data_layer.imageset/data_layer.png)**
+**![Data Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/data_layer.imageset/data_layer.png)**
 
 + **SOLID principles**
 
@@ -50,7 +93,7 @@ Handles Data retrieval (API, local storing, conversion)
 
 #### ❸Infrastructure Layer
 It holds external dependencies such as, Network, Monitoring, Logger, Utilities.
-+ **![Infrastructure Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/infrastructure_layer.imageset/infrastructure_layer.png)**
+**![Infrastructure Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/infrastructure_layer.imageset/infrastructure_layer.png)**
 
 + **SOLID principles**
 
@@ -60,7 +103,7 @@ It holds external dependencies such as, Network, Monitoring, Logger, Utilities.
 
 #### ❹Presentation Layer
 Basically handles UI, state management. Holds SwiftUI Views and View Models.
-+ **![Presentation Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/presentation_layer.imageset/presentation_layer.png)**
+**![Presentation Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/presentation_layer.imageset/presentation_layer.png)**
 
 + **SOLID principles**
 
@@ -85,7 +128,7 @@ Basically handles UI, state management. Holds SwiftUI Views and View Models.
 
 This project includes unit tests to ensure the reliability of the **`WeatherRepository`** and its interactions with the **API service** and **local database**.  
 
-+ **![Unit test folder](WeatherApp/WeatherApp/Assets.xcassets/readme/datatest_layer.imageset/datatest_layer.png)**
+**![Unit test folder](WeatherApp/WeatherApp/Assets.xcassets/readme/datatest_layer.imageset/datatest_layer.png)**
 
 ### 🏗 Test Setup  
 The unit tests are implemented using **XCTest**, mocking the dependencies to simulate scenarios
