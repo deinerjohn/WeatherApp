@@ -20,129 +20,156 @@ struct WeatherMainView: View {
     
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "metric"
     
+    @Namespace private var animationNamespace
+    @State private var selectedWeather: Weather?
+    @State private var isShowDetails: Bool = false
+    
     var body: some View {
-        NavigationStack {
-            VStack {
-                
-                if !viewModel.filteredCountries.isEmpty { //It will monitor filteredCountries, once true it will show list.
-                    GeometryReader { geometry in
-                        List(viewModel.filteredCountries) { country in
-                            
-                            Button(action: {
-                                viewModel.selectedCountry = country
-                                viewModel.searchValue = ""
-                                isSearchFocused = false
-                                dismissSearch()
-                                
-                            }) {
-                                HStack {
-                                    
-                                    if let city = country.city {
-                                        Text("\(city), \(country.country)")
-                                    } else {
-                                        Text("\(country.country)")
-                                    }
-                                    
-                                    Spacer()
-                                }
-                            }
-                        }
-                        .listStyle(.plain)
-                        .frame(height: geometry.size.height)
-                    }
-                }
-                
-                ZStack {
+        ZStack {
+            NavigationStack {
+                VStack {
                     
-                    VStack(spacing: 0) {
-                        
-                        if viewModel.isOffline { //Detecting offline, or no connection will show this.
-                            HStack {
-                                Image(systemName: "wifi.slash")
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                                    .transition(.scale(scale: 0.5).combined(with: .opacity))
-                                Text("No internet connection")
-                                    .font(.caption)
-                                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                            .animation(.spring(), value: true)
-                        }
-                        
-                        if viewModel.searchValue.isEmpty { //Hide temporarily if start typing..
-                            
-                            List {
-                                ForEach(viewModel.weatherListData) { weather in
-                                    ZStack {
-                                        WeatherRowView(weatherData: weather)
-                                        NavigationLink(destination: WeatherDetailedView(weatherData: weather)) {
-                                            EmptyView()
-                                        }
-                                        .opacity(0)
-                                    }
-                                    .listRowBackground(Color.clear)
-                                    .listRowSeparator(.hidden)
-                                }
-                                .onDelete(perform: viewModel.deleteWeatherData)
+                    if !viewModel.filteredCountries.isEmpty { //It will monitor filteredCountries, once true it will show list.
+                        GeometryReader { geometry in
+                            List(viewModel.filteredCountries) { country in
                                 
+                                Button(action: {
+                                    viewModel.selectedCountry = country
+                                    viewModel.searchValue = ""
+                                    isSearchFocused = false
+                                    dismissSearch()
+                                    
+                                }) {
+                                    HStack {
+                                        if let city = country.city {
+                                            Text("\(city), \(country.country)")
+                                        } else {
+                                            Text("\(country.country)")
+                                        }
+                                        Spacer()
+                                    }
+                                }
                             }
                             .listStyle(.plain)
-                            .background(.clear)
+                            .frame(height: geometry.size.height)
+                        }
+                    }
+                    
+                    ZStack {
+                        
+                        VStack(spacing: 0) {
+                            
+                            if viewModel.isOffline { //Detecting offline, or no connection will show this.
+                                HStack {
+                                    Image(systemName: "wifi.slash")
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                                        .transition(.scale(scale: 0.5).combined(with: .opacity))
+                                    Text("No internet connection")
+                                        .font(.caption)
+                                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                                .animation(.spring(), value: true)
+                            }
+                            
+                            if viewModel.searchValue.isEmpty {
+                                List {
+                                    ForEach(viewModel.weatherListData) { weather in
+                                        Button(action: {
+                                            withAnimation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0.3)) {
+                                                selectedWeather = weather
+                                                isShowDetails = true
+                                            }
+                                        }) {
+                                            WeatherRowView(weatherData: weather)
+                                                .matchedGeometryEffect(id: weather.countryName, in: animationNamespace)
+                                        }
+                                        .listRowBackground(Color.clear)
+                                        .listRowSeparator(.hidden)
+                                        
+                                    }
+                                    .onDelete(perform: viewModel.deleteWeatherData)
+                                    .onMove(perform: moveItem)
+                                    
+                                }
+                                .listStyle(.plain)
+                                .background(.clear)
+       
+                            }
                             
                         }
                         
                     }
-                    
-                    if viewModel.isLoading {
-                        WeatherLoadingView()
-                    }
-                    
-                }
-                .navigationTitle("Weather Demo App")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Menu {
-                            Button(action: {
-                                temperatureUnit = "metric"
-                                self.viewModel.updateAndReloadAllCachedWeather(units: "metric")
-                            }) {
-                                Label("Metric", systemImage: temperatureUnit == "metric" ? "checkmark" : "")
+                    .navigationTitle("Weather Demo App")
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Menu {
+                                Button(action: {
+                                    temperatureUnit = "metric"
+                                    self.viewModel.updateAndReloadAllCachedWeather(units: "metric")
+                                }) {
+                                    Label("Metric", systemImage: temperatureUnit == "metric" ? "checkmark" : "")
+                                }
+                                
+                                Button(action: {
+                                    temperatureUnit = "imperial"
+                                    self.viewModel.updateAndReloadAllCachedWeather(units: "imperial")
+                                }) {
+                                    Label("Imperial", systemImage: temperatureUnit == "imperial" ? "checkmark" : "")
+                                }
+                                
+                            } label: {
+                                Image(systemName: "gearshape")
+                                    .foregroundColor(colorScheme == .dark ? .white : .black)
                             }
-                            
-                            Button(action: {
-                                temperatureUnit = "imperial"
-                                self.viewModel.updateAndReloadAllCachedWeather(units: "imperial")
-                            }) {
-                                Label("Imperial", systemImage: temperatureUnit == "imperial" ? "checkmark" : "")
-                            }
-                            
-                        } label: {
-                            Image(systemName: "gearshape")
-                                .foregroundColor(colorScheme == .dark ? .white : .black)
                         }
                     }
-                }
-                .searchable(text: $viewModel.searchValue, prompt: "Search for a country")
-                .focused($isSearchFocused)
-                .onChange(of: viewModel.searchValue) { _ in
-                    viewModel.objectWillChange.send()
-                }
-                .refreshable {
-                    self.viewModel.updateAndReloadAllCachedWeather()
+                    .searchable(text: $viewModel.searchValue, prompt: "Search for a country")
+                    .focused($isSearchFocused)
+                    .onChange(of: viewModel.searchValue) { _ in
+                        viewModel.objectWillChange.send()
+                    }
+                    .refreshable {
+                        self.viewModel.updateAndReloadAllCachedWeather()
+                    }
+                    
                 }
                 
             }
-            .navigationDestination(isPresented: $viewModel.showDetailWeather) {
-                WeatherDetailedView(weatherData: viewModel.selectedCountryWeatherData, selectedCountry: viewModel.selectedCountry?.country)
+            .scaleEffect(isShowDetails ? 0.9 : 1)
+            .animation(.spring(), value: isShowDetails)
+            
+            if let selectedWeather, isShowDetails {
+                WeatherDetailedView(
+                    weatherData: selectedWeather,
+                    selectedCountry: viewModel.selectedCountry?.country,
+                    isPresented: $isShowDetails,
+                    namespace: animationNamespace
+                )
+            } else if let fetchedWeather = viewModel.selectedCountryWeatherData, viewModel.showDetailWeather {
+                WeatherDetailedView(
+                    weatherData: fetchedWeather,
+                    selectedCountry: viewModel.selectedCountry?.country,
+                    isPresented: $viewModel.showDetailWeather,
+                    namespace: animationNamespace
+                )
             }
+            
+            if viewModel.isLoading {
+                WeatherLoadingView()
+            }
+            
         }
         .onAppear {
             self.viewModel.loadWeatherData()
         }
     }
     
+    private func moveItem(from source: IndexSet, to destination: Int) {
+        viewModel.weatherListData.move(fromOffsets: source, toOffset: destination)
+    }
 }
 
 #Preview {

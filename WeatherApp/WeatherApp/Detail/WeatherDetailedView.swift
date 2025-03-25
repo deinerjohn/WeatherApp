@@ -11,7 +11,20 @@ import Domain
 struct WeatherDetailedView: View {
     var weatherData: Weather?
     var selectedCountry: String?
+    @Binding var isPresented: Bool
     @AppStorage("temperatureUnit") private var temperatureUnit: String = "metric"
+    
+    var namespace: Namespace.ID
+    
+    @State private var dragOffset: CGFloat = 0
+    @GestureState private var dragTranslation: CGFloat = 0
+    
+    
+    private var scaleSizeFactor: CGFloat {
+        let maxDrag = 300.0
+        let progress = min(abs(dragOffset + dragTranslation) / maxDrag, 1)
+        return 1.0 - (progress * 0.3)
+    }
     
     private var weatherStatus: String {
         return weatherData?.weather.first?.main ?? ""
@@ -19,9 +32,8 @@ struct WeatherDetailedView: View {
     
     var body: some View {
         ZStack {
-            
             WeatherConditionsTypeHelper.gradient(for: WeatherConditionType(rawValue: weatherStatus) ?? .clear)
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
             
             VStack(spacing: 20) {
                 
@@ -63,6 +75,46 @@ struct WeatherDetailedView: View {
                     WeatherDetailCard(title: "Wind", value: "\(weatherData?.wind.speed.value ?? 0.0) m/s", icon: "wind")
                 }
                 .padding(.top, 10)
+                
+            }
+            .padding(.top, 30)
+        }
+        .matchedGeometryEffect(id: weatherData?.countryName, in: namespace)
+        .frame(width: UIScreen.main.bounds.width * scaleSizeFactor, height: UIScreen.main.bounds.height * scaleSizeFactor)
+        .background(WeatherConditionsTypeHelper.gradient(for: WeatherConditionType(rawValue: weatherStatus) ?? .clear))
+        .offset(y: dragOffset + dragTranslation)
+        .gesture(
+            DragGesture()
+                .updating($dragTranslation) { value, state, _ in
+                    
+                    if value.translation.height > 0 {
+                        state = value.translation.height
+                    }
+                }
+                .onChanged { value in
+                    if value.translation.height > 0 {
+                        dragOffset = value.translation.height
+                    }
+                }
+                .onEnded { value in
+                    //The '200' value is the treshold
+                    if value.translation.height > 200 {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            isPresented = false
+                            dragOffset = 0
+                        }
+                    } else {
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: dragOffset) // Smooth animation
+        .onAppear {
+            //Adding a slight delay
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                dragOffset = 0
             }
         }
     }
@@ -92,8 +144,4 @@ struct WeatherDetailCard: View {
         .cornerRadius(6)
         .shadow(radius: 5)
     }
-}
-
-#Preview {
-    WeatherDetailedView(weatherData: nil)
 }

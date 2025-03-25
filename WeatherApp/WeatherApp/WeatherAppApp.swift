@@ -16,6 +16,8 @@ struct WeatherAppApp: App {
     private let useCaseProvider: WeatherUseCaseProvider
     private let networkConnectivity: NetworkConnectionMonitor = NetworkConnectionMonitor()
     
+    @State private var isShowSplashScreen: Bool = true
+    
     init() {
         self.repositoryProvider = WeatherRepositoryProvider(networkMonitor: self.networkConnectivity)
         self.useCaseProvider = WeatherUseCaseProvider(weatherRepository: repositoryProvider.provideWeatherRepository())
@@ -23,7 +25,11 @@ struct WeatherAppApp: App {
     
     var body: some Scene {
         WindowGroup {
-            WeatherMainView(viewModel: WeatherMainViewModel(weatherUseCase: self.useCaseProvider.provideWeatherUseCase(), networkChecker: self.networkConnectivity))
+            if isShowSplashScreen {
+                SplashScreenView(isShowSplash: $isShowSplashScreen)
+            } else {
+                WeatherMainView(viewModel: WeatherMainViewModel(weatherUseCase: self.useCaseProvider.provideWeatherUseCase(), networkChecker: self.networkConnectivity))
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ struct WeatherConditionsTypeHelper {
         case .clear:
             return LinearGradient(colors: [Color.blue, Color.cyan], startPoint: .top, endPoint: .bottom)
         case .clouds:
-            return LinearGradient(colors: [Color.gray.opacity(0.8), Color.white], startPoint: .top, endPoint: .bottom)
+            return LinearGradient(colors: [Color.gray, Color.white], startPoint: .top, endPoint: .bottom)
         case .rain:
             return LinearGradient(colors: [Color.gray, Color.blue.opacity(0.6)], startPoint: .top, endPoint: .bottom)
         case .drizzle:

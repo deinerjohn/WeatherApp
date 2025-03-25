@@ -26,6 +26,18 @@ public struct Weather: Identifiable, @unchecked Sendable {
     }
 }
 
+extension Weather: Hashable {
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(countryName)
+    }
+    
+    public static func == (lhs: Weather, rhs: Weather) -> Bool {
+        return lhs.countryName == rhs.countryName
+    }
+    
+}
+
 public struct WeatherCondition {
     public let main: String
     public let description: String
