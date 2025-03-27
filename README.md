@@ -73,7 +73,7 @@ This project structured into four layers, packing it seperately using **Swift Pa
 #### ❶ Domain Layer
 Responsible for Business rules. It is considered independent of frameworks.
 
-**![Domain Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/domain_layer.imageset/domain_layer.png)**
+**![Domain Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/domain_layer.imageset/Image.png)**
 
 + **SOLID principles**
 
@@ -83,7 +83,8 @@ Responsible for Business rules. It is considered independent of frameworks.
 
 #### ❷Data Layer
 Handles Data retrieval (API, local storing, conversion)
-**![Data Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/data_layer.imageset/data_layer.png)**
+
+**![Data Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/data_layer.imageset/Image.png)**
 
 + **SOLID principles**
 
@@ -92,8 +93,9 @@ Handles Data retrieval (API, local storing, conversion)
   ✔️ Dependency Inversion
 
 #### ❸Infrastructure Layer
-It holds external dependencies such as, Network, Monitoring, Logger, Utilities.
-**![Infrastructure Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/infrastructure_layer.imageset/infrastructure_layer.png)**
+It holds external dependencies such as, Network, Monitoring, Logger, Utilities, SQLiteHelper.
+
+**![Infrastructure Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/infrastructure_layer.imageset/Image.png)**
 
 + **SOLID principles**
 
@@ -103,7 +105,8 @@ It holds external dependencies such as, Network, Monitoring, Logger, Utilities.
 
 #### ❹Presentation Layer
 Basically handles UI, state management. Holds SwiftUI Views and View Models.
-**![Presentation Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/presentation_layer.imageset/presentation_layer.png)**
+
+**![Presentation Layer](WeatherApp/WeatherApp/Assets.xcassets/readme/presentation_layer.imageset/Image.png)**
 
 + **SOLID principles**
 
@@ -140,42 +143,53 @@ To isolate the **`WeatherRepository`** from actual API calls and database intera
 
 #### **1️⃣ Fetch Weather Successfully**  
 ```swift
-func testFetchWeather_Success() async throws {
-    // Given - Prepare mock API response
-    let mockWeather = WeatherDTO(
-        weather: [WeatherConditionDTO(main: "Clear", description: "Clear sky", icon: "01d")],
-        main: MainWeatherDTO(temp: 20.5, pressure: 1012, humidity: 60, tempMin: 18.0, tempMax: 22.0),
-        wind: WindDTO(speed: 3.5, deg: 120),
-        clouds: CloudsDTO(all: 10),
-        id: 1,
-        cityName: "Tokyo",
-        countryName: "Japan"
-    )
+    func testFetchWeather_Success() async throws {
+        // Given
+        let mockWeather = WeatherDTO(
+            weather: [WeatherConditionDTO(main: "Clear", description: "Clear sky", icon: "01d")],
+            main: MainWeatherDTO(temp: 20.5, pressure: 1012, humidity: 60, tempMin: 18.0, tempMax: 22.0),
+            wind: WindDTO(speed: 3.5, deg: 120),
+            clouds: CloudsDTO(all: 10),
+            id: 1,
+            cityName: "Tokyo",
+            countryName: "Japan"
+        )
+        
+        //Inject sample response and inject weatherData
+        mockAPIService.mockResponse = mockWeather
+        mockLocaldb.storedWeatherData = ["Tokyo": mockWeather.toDomain()]
+        
+        do {
+            
+            let result = try await repository.fetchWeather(country: "Japan", city: "Tokyo", units: "metric")
+            
+            XCTAssertEqual(result.cityName, "Tokyo")
+            XCTAssertEqual(result.countryName, "Japan")
+            
+        }
+        
 
-    mockAPIService.mockResponse = mockWeather
-    mockLocaldb.storedWeatherData = ["Tokyo": mockWeather]
-
-    // When - Fetch weather data
-    let result = try await repository.fetchWeather(country: "Japan", city: "Tokyo", units: "metric")
-
-    // Then - Validate response
-    XCTAssertEqual(result.cityName, "Tokyo")
-    XCTAssertEqual(result.countryName, "Japan")
-}
+    }
 ```
 
 #### **2️⃣ Delete Weather Data**  
 ```swift
     func testDeleteWeatherData() async throws {
         
-        let mockWeather = WeatherDTO(
-            weather: [WeatherConditionDTO(main: "Sunny", description: "Clear sky", icon: "01d")],
-            main: MainWeatherDTO(temp: 30.0, pressure: 1010, humidity: 40, tempMin: 28.0, tempMax: 32.0),
-            wind: WindDTO(speed: 2.5, deg: 90),
-            clouds: CloudsDTO(all: 5),
-            id: 2,
-            cityName: "Madrid",
-            countryName: "Spain"
+        let mockWeather = Weather(
+            weather: [WeatherCondition(main: "Clear", description: "Clear sky", icon: "01d")],
+            main: MainWeather(
+                temperature: Temperature(value: 20.5),
+                pressure: Pressure(value: 1012),
+                humidity: Humidity(value: 60),
+                minTemperature: Temperature(value: 18.0),
+                maxTemperature: Temperature(value: 22.0)
+            ),
+            wind: Wind(speed: Speed(value: 3.5), degree: 120),
+            clouds: Clouds(coverage: 10),
+            id: 1,
+            countryName: "Spain",
+            cityName: "Madrid"
         )
         
         mockLocaldb.storedWeatherData = ["Madrid": mockWeather]
