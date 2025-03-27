@@ -15,10 +15,11 @@ public enum SQLiteError: Error {
 }
 
 public protocol SQLiteHelperProtocol {
-    func saveWeatherData(country: String, _ weather: Weather) async throws
-    func getWeatherData(country: String, city: String) async throws -> Weather
-    func getAllWeatherData() async throws -> [Weather]
-    func deleteWeatherData(for city: String) async throws
+    func createWeatherData(country: String, _ weather: Weather) throws
+    func updateWeatherData(country: String, _ weather: Weather) throws
+    func readWeatherData(country: String, city: String) throws -> Weather?
+    func readAllWeatherData() async throws -> [Weather]
+    func deleteWeatherData(for city: String) throws
 }
 
 public class SQLiteHelper: SQLiteHelperProtocol {
@@ -81,97 +82,80 @@ public class SQLiteHelper: SQLiteHelperProtocol {
             t.column(timestamp, defaultValue: Date().timeIntervalSince1970)
         })
     }
-
-    public func saveWeatherData(country: String, _ weather: Weather) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            do {
-                let existingQuery = weatherTable.filter(cityName == weather.cityName ?? "")
-                
-                if let _ = try db?.pluck(existingQuery) {
-                    // country exists, update the entry
-                    let update = existingQuery.update(
-                        temperature <- weather.main.temperature.value,
-                        description <- weather.weather.first?.description ?? "",
-                        main <- weather.weather.first?.main ?? "",
-                        icon <- weather.weather.first?.icon ?? "",
-                        tempMin <- weather.main.minTemperature.value,
-                        tempMax <- weather.main.maxTemperature.value,
-                        pressure <- weather.main.pressure.value,
-                        humidity <- weather.main.humidity.value,
-                        windSpeed <- weather.wind.speed.value,
-                        windDeg <- weather.wind.degree,
-                        cloudiness <- weather.clouds.coverage,
-                        timestamp <- Date().timeIntervalSince1970
-                    )
-                    try db?.run(update)
-                } else {
-                    // country does not exist, insert new entry
-                    let insert = weatherTable.insert(
-                        countryName <- country,
-                        cityName <- weather.cityName ?? "",
-                        temperature <- weather.main.temperature.value,
-                        description <- weather.weather.first?.description ?? "",
-                        main <- weather.weather.first?.main ?? "",
-                        icon <- weather.weather.first?.icon ?? "",
-                        tempMin <- weather.main.minTemperature.value,
-                        tempMax <- weather.main.maxTemperature.value,
-                        pressure <- weather.main.pressure.value,
-                        humidity <- weather.main.humidity.value,
-                        windSpeed <- weather.wind.speed.value,
-                        windDeg <- weather.wind.degree,
-                        cloudiness <- weather.clouds.coverage,
-                        timestamp <- Date().timeIntervalSince1970
-                    )
-                    try db?.run(insert)
-                }
-                continuation.resume()
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
+    
+    public func createWeatherData(country: String, _ weather: Weather) throws {
+        let insert = weatherTable.insert(
+            countryName <- country,
+            cityName <- weather.cityName ?? "",
+            temperature <- weather.main.temperature.value,
+            description <- weather.weather.first?.description ?? "",
+            main <- weather.weather.first?.main ?? "",
+            icon <- weather.weather.first?.icon ?? "",
+            tempMin <- weather.main.minTemperature.value,
+            tempMax <- weather.main.maxTemperature.value,
+            pressure <- weather.main.pressure.value,
+            humidity <- weather.main.humidity.value,
+            windSpeed <- weather.wind.speed.value,
+            windDeg <- weather.wind.degree,
+            cloudiness <- weather.clouds.coverage,
+            timestamp <- Date().timeIntervalSince1970
+        )
+        try db?.run(insert)
     }
-
-    public func getWeatherData(country: String, city: String) async throws -> Weather {
-        return try await withCheckedThrowingContinuation { continuation in
-            do {
-                guard let db = db else {
-                    throw SQLiteError.databaseNotInitialized
-                }
-                
-                let query = weatherTable.filter(cityName == city)
-                
-                if let record = try db.pluck(query) {
-                    let weather = Weather(
-                        weather: [WeatherCondition(
-                            main: record[main],
-                            description: record[description],
-                            icon: record[icon]
-                        )],
-                        main: MainWeather(
-                            temperature: Temperature(value: record[temperature]),
-                            pressure: Pressure(value: record[pressure]),
-                            humidity: Humidity(value: record[humidity]),
-                            minTemperature: Temperature(value: record[tempMin]),
-                            maxTemperature: Temperature(value: record[tempMax])
-                        ),
-                        wind: Wind(speed: Speed(value: record[windSpeed]), degree: record[windDeg]),
-                        clouds: Clouds(coverage: record[cloudiness]),
-                        id: record[id],
-                        countryName: record[countryName],
-                        cityName: record[cityName]
-                    )
-                    continuation.resume(returning: weather)
-                } else {
-                    continuation.resume(throwing: SQLiteError.dataNotFound)
-                }
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
-    }
-
-    public func getAllWeatherData() async throws -> [Weather] {
+    
+    public func updateWeatherData(country: String, _ weather: Weather) throws {
+        let existingQuery = weatherTable.filter(cityName == weather.cityName ?? "")
         
+        let update = existingQuery.update(
+            temperature <- weather.main.temperature.value,
+            description <- weather.weather.first?.description ?? "",
+            main <- weather.weather.first?.main ?? "",
+            icon <- weather.weather.first?.icon ?? "",
+            tempMin <- weather.main.minTemperature.value,
+            tempMax <- weather.main.maxTemperature.value,
+            pressure <- weather.main.pressure.value,
+            humidity <- weather.main.humidity.value,
+            windSpeed <- weather.wind.speed.value,
+            windDeg <- weather.wind.degree,
+            cloudiness <- weather.clouds.coverage,
+            timestamp <- Date().timeIntervalSince1970
+        )
+        
+        try db?.run(update)
+        
+    }
+    
+    public func readWeatherData(country: String, city: String) throws -> Weather? {
+        let query = weatherTable.filter(cityName == city)
+        
+        if let record = try db?.pluck(query) {
+            
+            return Weather(
+                weather: [WeatherCondition(
+                    main: record[main],
+                    description: record[description],
+                    icon: record[icon]
+                )],
+                main: MainWeather(
+                    temperature: Temperature(value: record[temperature]),
+                    pressure: Pressure(value: record[pressure]),
+                    humidity: Humidity(value: record[humidity]),
+                    minTemperature: Temperature(value: record[tempMin]),
+                    maxTemperature: Temperature(value: record[tempMax])
+                ),
+                wind: Wind(speed: Speed(value: record[windSpeed]), degree: record[windDeg]),
+                clouds: Clouds(coverage: record[cloudiness]),
+                id: record[id],
+                countryName: record[countryName],
+                cityName: record[cityName]
+            )
+        }
+        
+        return nil
+        
+    }
+    
+    public func readAllWeatherData() async throws -> [Weather] {
         return try await withCheckedThrowingContinuation { continuation in
             do {
                 guard let db = db else {
@@ -210,17 +194,10 @@ public class SQLiteHelper: SQLiteHelperProtocol {
             }
         }
     }
-
-    public func deleteWeatherData(for city: String) async throws {
-        return try await withCheckedThrowingContinuation { continuation in
-            do {
-                let query = weatherTable.filter(self.cityName == city)
-                try db?.run(query.delete())
-                continuation.resume()
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
+    
+    public func deleteWeatherData(for city: String) throws {
+        let query = weatherTable.filter(cityName == city)
+        try db?.run(query.delete())
     }
     
 }

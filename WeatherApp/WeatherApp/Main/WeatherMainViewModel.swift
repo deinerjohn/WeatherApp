@@ -29,14 +29,12 @@ class WeatherMainViewModel: ObservableObject {
     @Published var isOffline: Bool = false
     @Published var isLoading: Bool = false
     
-    @Published var temperatureUnit: String = UserDefaults.standard.string(forKey: "temperatureUnit") ?? "metric"
-    
+    @AppStorage("temperatureUnit") var temperatureUnit: String = "metric"
     
     init(weatherUseCase: WeatherUseCase, networkChecker: NetworkConnectionMonitor) {
         self.weatherUseCase = weatherUseCase
         self.networkChecker = networkChecker
         self.listOfCountries = self.loadCountries()
-        self.temperatureUnit = UserDefaults.standard.string(forKey: "temperatureUnit") ?? "metric"
         
         networkChecker.onStatusChange = { [weak self] isOnline in
             guard let self else { return }
@@ -83,7 +81,7 @@ class WeatherMainViewModel: ObservableObject {
             await self.willShowLoading(true)
             
             do {
-                let weatherData = try await weatherUseCase.execute(country: selectedCountry.country, city: selectedCountry.city ?? "", units: temperatureUnit)
+                let weatherData = try await weatherUseCase.execute(country: selectedCountry.country, city: selectedCountry.city ?? "", units: self.temperatureUnit)
                 self.loadWeatherData()
                 
                 await MainActor.run {
@@ -129,7 +127,7 @@ class WeatherMainViewModel: ObservableObject {
                 for data in weatherListData {
                     group.addTask {
                         do {
-                            _ = try await self.weatherUseCase.execute(country: data.countryName, city: data.cityName ?? "", units: units ?? self.temperatureUnit)
+                            _ = try await self.weatherUseCase.execute(country: data.countryName, city: data.cityName ?? "", units: units ?? self.temperatureUnit )
                         } catch {
                             
                         }

@@ -18,8 +18,6 @@ struct WeatherMainView: View {
     @Environment(\.dismissSearch) private var dismissSearch
     @Environment(\.colorScheme) var colorScheme
     
-    @AppStorage("temperatureUnit") private var temperatureUnit: String = "metric"
-    
     @Namespace private var animationNamespace
     @State private var selectedWeather: Weather?
     @State private var isShowDetails: Bool = false
@@ -107,17 +105,17 @@ struct WeatherMainView: View {
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Menu {
                                 Button(action: {
-                                    temperatureUnit = "metric"
+                                    self.viewModel.temperatureUnit = "metric"
                                     self.viewModel.updateAndReloadAllCachedWeather(units: "metric")
                                 }) {
-                                    Label("Metric", systemImage: temperatureUnit == "metric" ? "checkmark" : "")
+                                    Label("Metric", systemImage: self.viewModel.temperatureUnit == "metric" ? "checkmark" : "")
                                 }
                                 
                                 Button(action: {
-                                    temperatureUnit = "imperial"
+                                    self.viewModel.temperatureUnit = "imperial"
                                     self.viewModel.updateAndReloadAllCachedWeather(units: "imperial")
                                 }) {
-                                    Label("Imperial", systemImage: temperatureUnit == "imperial" ? "checkmark" : "")
+                                    Label("Imperial", systemImage: self.viewModel.temperatureUnit == "imperial" ? "checkmark" : "")
                                 }
                                 
                             } label: {
@@ -148,6 +146,9 @@ struct WeatherMainView: View {
                     isPresented: $isShowDetails,
                     namespace: animationNamespace
                 )
+                .onDisappear {
+                    self.selectedWeather = nil
+                }
             } else if let fetchedWeather = viewModel.selectedCountryWeatherData, viewModel.showDetailWeather {
                 WeatherDetailedView(
                     weatherData: fetchedWeather,
@@ -155,6 +156,9 @@ struct WeatherMainView: View {
                     isPresented: $viewModel.showDetailWeather,
                     namespace: animationNamespace
                 )
+                .onDisappear {
+                    self.viewModel.selectedCountryWeatherData = nil
+                }
             }
             
             if viewModel.isLoading {

@@ -27,19 +27,30 @@ class WeatherLocalDbImpl: WeatherLocalDb {
     }
     
     func saveWeatherData(country: String, _ weather: Weather) async throws {
-        try await sqliteHelper.saveWeatherData(country: country, weather)
+        do {
+            if let _ = try sqliteHelper.readWeatherData(country: country, city: weather.cityName ?? "") {
+                try sqliteHelper.updateWeatherData(country: country, weather)
+            } else {
+                try sqliteHelper.createWeatherData(country: country, weather)
+            }
+        } catch {
+            throw error
+        }
     }
     
     func getWeatherData(country: String, city: String) async throws -> Weather {
-        return try await sqliteHelper.getWeatherData(country: country, city: city)
+        guard let weather = try sqliteHelper.readWeatherData(country: country, city: city) else {
+            throw SQLiteError.dataNotFound
+        }
+        return weather
     }
     
     func getAllWeatherData() async throws -> [Weather] {
-        return try await sqliteHelper.getAllWeatherData()
+        return try await sqliteHelper.readAllWeatherData()
     }
     
     func deleteWeatherData(for city: String) async throws {
-        return try await sqliteHelper.deleteWeatherData(for: city)
+        try sqliteHelper.deleteWeatherData(for: city)
     }
     
 }
