@@ -12,6 +12,8 @@ import Data
 
 @main
 struct WeatherAppApp: App {
+    
+    private let sqliteHelper = SQLiteHelper()
     private let repositoryProvider: WeatherRepositoryProvider
     private let useCaseProvider: WeatherUseCaseProvider
     private let networkConnectivity: NetworkConnectionMonitor = NetworkConnectionMonitor()
@@ -19,7 +21,7 @@ struct WeatherAppApp: App {
     @State private var isShowSplashScreen: Bool = true
     
     init() {
-        self.repositoryProvider = WeatherRepositoryProvider(networkMonitor: self.networkConnectivity)
+        self.repositoryProvider = WeatherRepositoryProvider(sqliteHelper: sqliteHelper, networkMonitor: self.networkConnectivity)
         self.useCaseProvider = WeatherUseCaseProvider(weatherRepository: repositoryProvider.provideWeatherRepository())
     }
     

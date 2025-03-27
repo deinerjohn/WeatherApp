@@ -1,26 +1,27 @@
 //
 //  SQLiteHelper.swift
-//  Data
+//  Infrastructure
 //
-//  Created by Deiner Calbang on 3/21/25.
+//  Created by Deiner Calbang on 3/27/25.
 //
 
 import Foundation
 import SQLite
+import Domain
 
-enum SQLiteError: Error {
+public enum SQLiteError: Error {
     case databaseNotInitialized
     case dataNotFound
 }
 
-protocol SQLiteHelperProtocol {
-    func saveWeatherData(country: String, _ weather: WeatherDTO) async throws
-    func getWeatherData(country: String, city: String) async throws -> WeatherDTO
-    func getAllWeatherData() async throws -> [WeatherDTO]
+public protocol SQLiteHelperProtocol {
+    func saveWeatherData(country: String, _ weather: Weather) async throws
+    func getWeatherData(country: String, city: String) async throws -> Weather
+    func getAllWeatherData() async throws -> [Weather]
     func deleteWeatherData(for city: String) async throws
 }
 
-class SQLiteHelper: SQLiteHelperProtocol {
+public class SQLiteHelper: SQLiteHelperProtocol {
     private var db: Connection?
     
     private let weatherTable = Table("weather")
@@ -41,7 +42,7 @@ class SQLiteHelper: SQLiteHelperProtocol {
     private let timestamp: SQLite.Expression<Double> = Expression("timestamp")  // For timestamp
     private let fileName = "weather_app.sqlite3"
 
-    init() {
+    public init() {
         self.initDB()
     }
     
@@ -81,25 +82,25 @@ class SQLiteHelper: SQLiteHelperProtocol {
         })
     }
 
-    func saveWeatherData(country: String, _ weather: WeatherDTO) async throws {
+    public func saveWeatherData(country: String, _ weather: Weather) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             do {
-                let existingQuery = weatherTable.filter(cityName == weather.cityName)
+                let existingQuery = weatherTable.filter(cityName == weather.cityName ?? "")
                 
                 if let _ = try db?.pluck(existingQuery) {
                     // country exists, update the entry
                     let update = existingQuery.update(
-                        temperature <- weather.main.temp,
+                        temperature <- weather.main.temperature.value,
                         description <- weather.weather.first?.description ?? "",
                         main <- weather.weather.first?.main ?? "",
                         icon <- weather.weather.first?.icon ?? "",
-                        tempMin <- weather.main.tempMin,
-                        tempMax <- weather.main.tempMax,
-                        pressure <- weather.main.pressure,
-                        humidity <- weather.main.humidity,
-                        windSpeed <- weather.wind.speed,
-                        windDeg <- weather.wind.deg,
-                        cloudiness <- weather.clouds.all,
+                        tempMin <- weather.main.minTemperature.value,
+                        tempMax <- weather.main.maxTemperature.value,
+                        pressure <- weather.main.pressure.value,
+                        humidity <- weather.main.humidity.value,
+                        windSpeed <- weather.wind.speed.value,
+                        windDeg <- weather.wind.degree,
+                        cloudiness <- weather.clouds.coverage,
                         timestamp <- Date().timeIntervalSince1970
                     )
                     try db?.run(update)
@@ -107,18 +108,18 @@ class SQLiteHelper: SQLiteHelperProtocol {
                     // country does not exist, insert new entry
                     let insert = weatherTable.insert(
                         countryName <- country,
-                        cityName <- weather.cityName,
-                        temperature <- weather.main.temp,
+                        cityName <- weather.cityName ?? "",
+                        temperature <- weather.main.temperature.value,
                         description <- weather.weather.first?.description ?? "",
                         main <- weather.weather.first?.main ?? "",
                         icon <- weather.weather.first?.icon ?? "",
-                        tempMin <- weather.main.tempMin,
-                        tempMax <- weather.main.tempMax,
-                        pressure <- weather.main.pressure,
-                        humidity <- weather.main.humidity,
-                        windSpeed <- weather.wind.speed,
-                        windDeg <- weather.wind.deg,
-                        cloudiness <- weather.clouds.all,
+                        tempMin <- weather.main.minTemperature.value,
+                        tempMax <- weather.main.maxTemperature.value,
+                        pressure <- weather.main.pressure.value,
+                        humidity <- weather.main.humidity.value,
+                        windSpeed <- weather.wind.speed.value,
+                        windDeg <- weather.wind.degree,
+                        cloudiness <- weather.clouds.coverage,
                         timestamp <- Date().timeIntervalSince1970
                     )
                     try db?.run(insert)
@@ -130,7 +131,7 @@ class SQLiteHelper: SQLiteHelperProtocol {
         }
     }
 
-    func getWeatherData(country: String, city: String) async throws -> WeatherDTO {
+    public func getWeatherData(country: String, city: String) async throws -> Weather {
         return try await withCheckedThrowingContinuation { continuation in
             do {
                 guard let db = db else {
@@ -140,24 +141,24 @@ class SQLiteHelper: SQLiteHelperProtocol {
                 let query = weatherTable.filter(cityName == city)
                 
                 if let record = try db.pluck(query) {
-                    let weather = WeatherDTO(
-                        weather: [WeatherConditionDTO(
+                    let weather = Weather(
+                        weather: [WeatherCondition(
                             main: record[main],
                             description: record[description],
                             icon: record[icon]
                         )],
-                        main: MainWeatherDTO(
-                            temp: record[temperature],
-                            pressure: record[pressure],
-                            humidity: record[humidity],
-                            tempMin: record[tempMin],
-                            tempMax: record[tempMax]
+                        main: MainWeather(
+                            temperature: Temperature(value: record[temperature]),
+                            pressure: Pressure(value: record[pressure]),
+                            humidity: Humidity(value: record[humidity]),
+                            minTemperature: Temperature(value: record[tempMin]),
+                            maxTemperature: Temperature(value: record[tempMax])
                         ),
-                        wind: WindDTO(speed: record[windSpeed], deg: record[windDeg]),
-                        clouds: CloudsDTO(all: record[cloudiness]),
+                        wind: Wind(speed: Speed(value: record[windSpeed]), degree: record[windDeg]),
+                        clouds: Clouds(coverage: record[cloudiness]),
                         id: record[id],
-                        cityName: record[cityName],
-                        countryName: record[countryName]
+                        countryName: record[countryName],
+                        cityName: record[cityName]
                     )
                     continuation.resume(returning: weather)
                 } else {
@@ -169,7 +170,7 @@ class SQLiteHelper: SQLiteHelperProtocol {
         }
     }
 
-    func getAllWeatherData() async throws -> [WeatherDTO] {
+    public func getAllWeatherData() async throws -> [Weather] {
         
         return try await withCheckedThrowingContinuation { continuation in
             do {
@@ -178,27 +179,27 @@ class SQLiteHelper: SQLiteHelperProtocol {
                 }
                 
                 let weatherRecords = try db.prepare(weatherTable)
-                var weatherList: [WeatherDTO] = []
+                var weatherList: [Weather] = []
 
                 for record in weatherRecords {
-                    let weather = WeatherDTO(
-                        weather: [WeatherConditionDTO(
+                    let weather = Weather(
+                        weather: [WeatherCondition(
                             main: record[main],
                             description: record[description],
                             icon: record[icon]
                         )],
-                        main: MainWeatherDTO(
-                            temp: record[temperature],
-                            pressure: record[pressure],
-                            humidity: record[humidity],
-                            tempMin: record[tempMin],
-                            tempMax: record[tempMax]
+                        main: MainWeather(
+                            temperature: Temperature(value: record[temperature]),
+                            pressure: Pressure(value: record[pressure]),
+                            humidity: Humidity(value: record[humidity]),
+                            minTemperature: Temperature(value: record[tempMin]),
+                            maxTemperature: Temperature(value: record[tempMax])
                         ),
-                        wind: WindDTO(speed: record[windSpeed], deg: record[windDeg]),
-                        clouds: CloudsDTO(all: record[cloudiness]),
+                        wind: Wind(speed: Speed(value: record[windSpeed]), degree: record[windDeg]),
+                        clouds: Clouds(coverage: record[cloudiness]),
                         id: record[id],
-                        cityName: record[cityName],
-                        countryName: record[countryName]
+                        countryName: record[countryName],
+                        cityName: record[cityName]
                     )
                     weatherList.append(weather)
                 }
@@ -210,7 +211,7 @@ class SQLiteHelper: SQLiteHelperProtocol {
         }
     }
 
-    func deleteWeatherData(for city: String) async throws {
+    public func deleteWeatherData(for city: String) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             do {
                 let query = weatherTable.filter(self.cityName == city)

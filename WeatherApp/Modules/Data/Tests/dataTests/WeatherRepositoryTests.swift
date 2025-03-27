@@ -14,12 +14,12 @@ final class WeatherRepositoryTests: XCTestCase {
     
     var repository: WeatherRepository!
     var mockAPIService: MockWeatherAPIService!
-    var mockLocaldb: MockSQLiteHelper!
+    var mockLocaldb: MockWeatherLocalDb!
 
     override func setUp() {
         super.setUp()
         mockAPIService = MockWeatherAPIService()
-        mockLocaldb = MockSQLiteHelper()
+        mockLocaldb = MockWeatherLocalDb()
         repository = WeatherRepositoryImpl(weatherApiService: mockAPIService, localDb: mockLocaldb, networkChecker: NetworkConnectionMonitor())
     }
 
@@ -44,7 +44,7 @@ final class WeatherRepositoryTests: XCTestCase {
         
         //Inject sample response and inject weatherData
         mockAPIService.mockResponse = mockWeather
-        mockLocaldb.storedWeatherData = ["Tokyo": mockWeather]
+        mockLocaldb.storedWeatherData = ["Tokyo": mockWeather.toDomain()]
         
         do {
             
@@ -60,14 +60,20 @@ final class WeatherRepositoryTests: XCTestCase {
     
     func testDeleteWeatherData() async throws {
         
-        let mockWeather = WeatherDTO(
-            weather: [WeatherConditionDTO(main: "Sunny", description: "Clear sky", icon: "01d")],
-            main: MainWeatherDTO(temp: 30.0, pressure: 1010, humidity: 40, tempMin: 28.0, tempMax: 32.0),
-            wind: WindDTO(speed: 2.5, deg: 90),
-            clouds: CloudsDTO(all: 5),
-            id: 2,
-            cityName: "Madrid",
-            countryName: "Spain"
+        let mockWeather = Weather(
+            weather: [WeatherCondition(main: "Clear", description: "Clear sky", icon: "01d")],
+            main: MainWeather(
+                temperature: Temperature(value: 20.5),
+                pressure: Pressure(value: 1012),
+                humidity: Humidity(value: 60),
+                minTemperature: Temperature(value: 18.0),
+                maxTemperature: Temperature(value: 22.0)
+            ),
+            wind: Wind(speed: Speed(value: 3.5), degree: 120),
+            clouds: Clouds(coverage: 10),
+            id: 1,
+            countryName: "Spain",
+            cityName: "Madrid"
         )
         
         mockLocaldb.storedWeatherData = ["Madrid": mockWeather]

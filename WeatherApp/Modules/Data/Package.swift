@@ -15,7 +15,6 @@ let package = Package(
             targets: ["Data"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/stephencelis/SQLite.swift.git", from: "0.15.3"),
         .package(path: "../Modules/Infrastructure"),
         .package(path: "../Modules/Domain")
     ],
@@ -26,8 +25,7 @@ let package = Package(
             name: "Data",
             dependencies: [
                 "Infrastructure",
-                "Domain",
-                .product(name: "SQLite", package: "SQLite.swift")
+                "Domain"
             ]
         ),
         .testTarget(

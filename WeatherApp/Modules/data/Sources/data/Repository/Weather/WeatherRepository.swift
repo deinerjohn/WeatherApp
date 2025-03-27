@@ -12,10 +12,10 @@ import Infrastructure
 public class WeatherRepositoryImpl: WeatherRepository {
     
     private let weatherApiService: WeatherAPIService
-    private let localDb: SQLiteHelperProtocol
+    private let localDb: WeatherLocalDb
     private let networkChecker: NetworkConnectionMonitor
     
-    init(weatherApiService: WeatherAPIService, localDb: SQLiteHelperProtocol, networkChecker: NetworkConnectionMonitor) {
+    init(weatherApiService: WeatherAPIService, localDb: WeatherLocalDb, networkChecker: NetworkConnectionMonitor) {
         self.weatherApiService = weatherApiService
         self.localDb = localDb
         self.networkChecker = networkChecker
@@ -26,7 +26,7 @@ public class WeatherRepositoryImpl: WeatherRepository {
             do {
                 let weatherDTO = try await weatherApiService.fetchWeather(city: city, units: units)
                 
-                try await localDb.saveWeatherData(country: country, weatherDTO)
+                try await localDb.saveWeatherData(country: country, weatherDTO.toDomain())
                 
                 return weatherDTO.toDomain()
             } catch {
@@ -39,7 +39,7 @@ public class WeatherRepositoryImpl: WeatherRepository {
     
     public func getAllWeatherData() async throws -> [Weather] {
         let cachedData = try await localDb.getAllWeatherData()
-        return cachedData.map { $0.toDomain() }
+        return cachedData
     }
     
     public func removeWeatherData(city: String) async throws {
@@ -48,7 +48,7 @@ public class WeatherRepositoryImpl: WeatherRepository {
 
     private func getCachedWeather(country: String, city: String) async throws -> Weather {
         let cachedData = try await localDb.getWeatherData(country: country, city: city)
-        return cachedData.toDomain()
+        return cachedData
     }
     
 }

@@ -171,9 +171,3 @@ struct WeatherMainView: View {
         viewModel.weatherListData.move(fromOffsets: source, toOffset: destination)
     }
 }
-
-#Preview {
-    let repository = WeatherRepositoryProvider(networkMonitor: NetworkConnectionMonitor())
-    let useCase = WeatherUseCaseProvider(weatherRepository: repository.provideWeatherRepository())
-    WeatherMainView(viewModel: WeatherMainViewModel(weatherUseCase: useCase.provideWeatherUseCase(), networkChecker: NetworkConnectionMonitor()))
-}
