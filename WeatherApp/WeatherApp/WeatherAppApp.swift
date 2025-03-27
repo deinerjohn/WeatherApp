@@ -13,25 +13,20 @@ import Data
 @main
 struct WeatherAppApp: App {
     
-    private let sqliteHelper = SQLiteHelper()
-    private let repositoryProvider: WeatherRepositoryProvider
-    private let useCaseProvider: WeatherUseCaseProvider
-    private let networkConnectivity: NetworkConnectionMonitor = NetworkConnectionMonitor()
-    
+    private let appDIContainer = AppDIContainer.shared
     @State private var isShowSplashScreen: Bool = true
-    
-    init() {
-        self.repositoryProvider = WeatherRepositoryProvider(sqliteHelper: sqliteHelper, networkMonitor: self.networkConnectivity)
-        self.useCaseProvider = WeatherUseCaseProvider(weatherRepository: repositoryProvider.provideWeatherRepository())
-    }
     
     var body: some Scene {
         WindowGroup {
-            if isShowSplashScreen {
-                SplashScreenView(isShowSplash: $isShowSplashScreen)
-            } else {
-                WeatherMainView(viewModel: WeatherMainViewModel(weatherUseCase: self.useCaseProvider.provideWeatherUseCase(), networkChecker: self.networkConnectivity))
+            
+            Group {
+                if isShowSplashScreen {
+                    SplashScreenView(isShowSplash: $isShowSplashScreen)
+                } else {
+                    WeatherMainView(viewModel: appDIContainer.makeWeatherMainViewModel())
+                }
             }
+            
         }
     }
 }
