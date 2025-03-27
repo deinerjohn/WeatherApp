@@ -114,6 +114,52 @@ Basically handles UI, state management. Holds SwiftUI Views and View Models.
 
 ✔️ Dependency Inversion
 
+### Dependency Injection (DI)
+This sample app also shows the usage of Dependency Injection, keeping components loosely coupled.
+
+### `AppDIContainer.swift`
+It uses the Singleton pattern, accessible throughout the whole app.
+
+```swift
+    
+    static let shared = AppDIContainer()
+    
+    private let networkMonitor: NetworkConnectionMonitor
+    private let sqliteHelper: SQLiteHelperProtocol
+    
+    private lazy var weatherRepositoryProvider: WeatherRepositoryProvider = {
+        WeatherRepositoryProvider(sqliteHelper: sqliteHelper, networkMonitor: networkMonitor)
+    }()
+    
+    private lazy var weatherRepository: WeatherRepository = {
+        weatherRepositoryProvider.provideWeatherRepository()
+    }()
+    
+    private lazy var weatherUseCase: WeatherUseCase = {
+        WeatherUseCaseImpl(weatherRepository: weatherRepository)
+    }()
+    
+    private init(
+        networkMonitor: NetworkConnectionMonitor = NetworkConnectionMonitor(),
+        sqliteHelper: SQLiteHelperProtocol = SQLiteHelper()
+    ) {
+        self.networkMonitor = networkMonitor
+        self.sqliteHelper = sqliteHelper
+    }
+    
+    func makeWeatherMainViewModel() -> WeatherMainViewModel {
+        
+        return WeatherMainViewModel(
+            weatherUseCase: weatherUseCase,
+            networkChecker: networkMonitor
+        )
+    }
+    
+}
+```
+
+Lazy loading dependencies such as `weatherRepository` and `weatherUseCase` are only being created when needed. Encapsulating the `makeWeatherViewModel` dependencies usage, it only interacts with UseCase.
+
 
 ## Installation
 > 1. **Clone the Repository**:
