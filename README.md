@@ -121,6 +121,7 @@ This sample app also shows the usage of Dependency Injection, keeping components
 It uses the Singleton pattern, accessible throughout the whole app.
 
 ```swift
+final class AppDIContainer {
     
     static let shared = AppDIContainer()
     
